@@ -50,17 +50,17 @@ handler = WebhookHandler(channel_secret)
 
 @app.route("/callback", methods=['POST'])
 def callback():
+    # get X-Line-Signature header value
     signature = request.headers['X-Line-Signature']
-
     # get request body as text
     body = request.get_data(as_text=True)
     app.logger.info("Request body: " + body)
-
-    # parse webhook body
+    # handle webhook body
     try:
-        events = parser.parse(body, signature)
+        handler.handle(body, signature)
     except InvalidSignatureError:
         abort(400)
+    return 'OK'
 
 def translate_text(text,de):
     translator = Translator()
