@@ -1,66 +1,67 @@
-#======LINE需求套件=====
-from flask import Flask, request, abort
+# -*- coding: utf-8 -*-
 
-from linebot import (
-    LineBotApi, WebhookHandler
-)
-from linebot.exceptions import (
-    InvalidSignatureError
-)
-from linebot.models import *
-#======LINE需求套件=====
+#  Licensed under the Apache License, Version 2.0 (the "License"); you may
+#  not use this file except in compliance with the License. You may obtain
+#  a copy of the License at
+#
+#       https://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#  License for the specific language governing permissions and limitations
+#  under the License.
 
-#======呼叫檔案內容=====
-from model import *
-#from new import *
 
-#======呼叫檔案內容=====
-
-#======python的函數庫==========
-from googletrans import Translator 
 import os
+import sys
+from googletrans import Translator 
 import time
 import openai 
 import threading 
 import requests
+from argparse import ArgumentParser
 
-#======python的函數庫==========
-
-#======讓heroku不會睡著======
-'''def wake_up_heroku():
-    while 1==1:
-        url = 'https://carebot0.herokuapp.com/' + 'heroku_wake_up'
-        res = requests.get(url)
-        if res.status_code==200:
-            print('喚醒heroku成功')
-        else:
-            print('喚醒失敗')
-        time.sleep(28*60)
-
-threading.Thread(target=wake_up_heroku).start()'''
-#======讓heroku不會睡著======
+from flask import Flask, request, abort
+from linebot import (
+    LineBotApi, WebhookParser
+)
+from linebot.exceptions import (
+    InvalidSignatureError
+)
+from linebot.models import (
+    MessageEvent, TextMessage, TextSendMessage,
+)
 
 app = Flask(__name__)
-static_tmp_path = os.path.join(os.path.dirname(__file__), 'static', 'tmp')
-# Channel Access Token
-line_bot_api = LineBotApi('dD9F7ZBipvJshb3TOPBOPFCn7hsh5yfwqzPZhINMktxtd+IjBSi1WdFfSYUiVLAOnVCz+T35ubp3xP3xebeUeT+15Jt+766weUPPRAg92xyKT5AgvlNhqIo8DMFt15VsRlSPbeOppCaoyhsY7Q0BIQdB04t89/1O/w1cDnyilFU=')
-# Channel Secret
-handler = WebhookHandler('9c18e743b1265ca98f9c60ee870abe76')
 
-# 監聽所有來自 /callback 的 Post Request
+# get channel_secret and channel_access_token from your environment variable
+channel_secret = os.getenv('LINE_CHANNEL_SECRET', None)
+channel_access_token = os.getenv('LINE_CHANNEL_ACCESS_TOKEN', None)
+if channel_secret is None:
+    print('Specify LINE_CHANNEL_SECRET as environment variable.')
+    sys.exit(1)
+if channel_access_token is None:
+    print('Specify LINE_CHANNEL_ACCESS_TOKEN as environment variable.')
+    sys.exit(1)
+
+line_bot_api = LineBotApi(channel_access_token)
+handler = WebhookHandler(channel_secret)
+
+
 @app.route("/callback", methods=['POST'])
 def callback():
-    # get X-Line-Signature header value
     signature = request.headers['X-Line-Signature']
+
     # get request body as text
     body = request.get_data(as_text=True)
     app.logger.info("Request body: " + body)
-    # handle webhook body
+
+    # parse webhook body
     try:
-        handler.handle(body, signature)
+        events = parser.parse(body, signature)
     except InvalidSignatureError:
         abort(400)
-    return 'OK'
 
 def translate_text(text,de):
     translator = Translator()
