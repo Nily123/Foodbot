@@ -71,7 +71,7 @@ def ask(q):
     import openai
     openai.api_key = "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"                   
     response = openai.Completion.create(
-    model="curie:ft-yzu:foodbot-2022-12-06-10-13-27",
+    model="text-curie-001",
     prompt=q,
     temperature=0.7,
     max_tokens=256,
