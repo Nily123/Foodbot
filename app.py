@@ -69,9 +69,9 @@ def translate_text(text,de):
 
 def ask(q):
     import openai
-    openai.api_key = "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"                   
+    openai.api_key = "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"                   
     response = openai.Completion.create(
-    model="text-curie-001",
+    model="curie:ft-yzu:foodbot-2022-12-06-10-13-27",
     prompt=q,
     temperature=0.7,
     max_tokens=256,
